@@ -2,21 +2,36 @@
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "./main.c"
-# 14 "./main.c"
-static inline void simpleDelay() {
-  for (int i=0; i<1000000; i+=1) {
-    __asm__("nop");
-  }
+# 11 "./main.c"
+const unsigned int GPIO_PIN = 0x01;
+
+
+volatile unsigned int counter;
+
+
+void delay(unsigned int ticks) {
+  unsigned int mtime_start;
+  while ((*(volatile unsigned int *)0x0200BFF8UL) - mtime_start < ticks) {}
 }
 
-int main() {
-  *(unsigned int volatile *)(0x10010000U + 0x00U) = 0b0001U;
+void main() {
+
+  ((*(volatile unsigned int *)0x10010008UL) |= (GPIO_PIN));
 
   while (1) {
-    ((*(unsigned int volatile *)(0x10010000U + 0x00U)) |= (0b0001U));
-    simpleDelay();
 
-    ((*(unsigned int volatile *)(0x10010000U + 0x00U)) &= ~(0b0001U));
-    simpleDelay();
+    if (counter % 2 == 0) {
+      ((*(volatile unsigned int *)0x1001000CUL) |= (GPIO_PIN));
+    } else {
+      ((*(volatile unsigned int *)0x1001000CUL) &= !(GPIO_PIN));
+    }
+
+
+    delay(1000);
+
+
+    counter += 1;
   }
+
+
 }
